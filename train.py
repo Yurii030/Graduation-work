@@ -3,21 +3,21 @@
 @editor: lumyjuwon
 """
 
-import time
-import tensorflow as tf
-import numpy as np
-import Bi_LSTM as Bi_LSTM
-import Word2Vec as Word2Vec
-import mariadb
-from konlpy.tag import Okt
-import sys
-import os
+import time ##시간설정을 위한 시간 모듈
+import tensorflow as tf ## 머신러닝을 위한 모듈
+import numpy as np ##벡터(리스트)모듈
+import Bi_LSTM as Bi_LSTM ##학습모델
+import Word2Vec as Word2Vec ##벡터화모델
+import mariadb ## db연동 maria.db모듈
+from konlpy.tag import Okt ##konlpy에서 OKt형태소 분석기 사용
+import sys ##파이썬 대화형 프롬프트사용을 위한 모듈
+import os ##작업 디렉토리 지정을 위한 모듈
 os.chdir('E:\\senier_project\\run\\Data\\')
-twitter = Okt()
+twitter = Okt() ##Okt객체 생성 메서드
 W2V = Word2Vec.Word2Vec()
 
-twitter = Okt()
-
+twitter = Okt() ## Okt객체 생성 메서드
+## 데이터 베이스 정보
 def dbconnect():
         conn = mariadb.connect(
             user="root",
@@ -38,11 +38,12 @@ def value(conn,category):
     for i in result:
         db_result.append([i[0], category])
     return db_result
-
+#영역분류
 cat = ['body', 'comm', 'social', 'art', 'science']
 line=[]
 
-conn = dbconnect()
+conn = dbconnect() ## db연결
+##예외처리
 try:
     for i in cat:
         line += value(conn,i)
@@ -55,7 +56,7 @@ embeddingmodel = []
 
 for i in line:
     content = i[1]  # csv에서 뉴스 제목 또는 뉴스 본문 column으로 변경
-    sentence = twitter.pos(i[0], norm=True, stem=True)
+    sentence = twitter.pos(i[0], norm=True, stem=True) ##원형을 찾아주는 옵션(norm,stem)
     temp = []
     temp_embedding = []
     all_temp = []

@@ -1,11 +1,11 @@
-import tensorflow as tf
-import Bi_LSTM as Bi_LSTM
-import Word2Vec as Word2Vec
-import gensim
-import numpy as np
-import os
-
-os.chdir('E:\\senier_project\\run\\Data\\')
+import tensorflow as tf  ## 머신러닝을 위한 모듈
+import Bi_LSTM as Bi_LSTM ## 학습모델
+import Word2Vec as Word2Vec ## 벡터화 모델
+import gensim ## 벡터화 모듈
+import numpy as np  ## 벡터((리스트)모듈)
+import os  ## 벡터((리스트)모듈)
+## 작업 디렉토리 지정
+os.chdir('E:\\senier_project\\run\\Data\\')## 현재 실행하는 스크립트 경로 변경
 
 def Convert2Vec(model_name, sentence):
     word_vec = []
@@ -35,7 +35,7 @@ def Grade(sentence):
             print(t, '\t', round(i * 100, 2), "%")
 
 
-W2V = Word2Vec.Word2Vec()
+W2V = Word2Vec.Word2Vec() 
 Batch_size = 1
 Vector_size = 300
 Maxseq_length = 500  # Max length of training data
@@ -54,16 +54,18 @@ with tf.variable_scope("loss", reuse = tf.AUTO_REUSE):
     logits = BiLSTM.logits(X, BiLSTM.W, BiLSTM.b, seq_len)
     loss, optimizer = BiLSTM.model_build(logits, Y, learning_rate)
 
-prediction = tf.nn.softmax(logits)  # softmax
+prediction = tf.nn.softmax(logits)  # softmax(활성화 함수)
 
 saver = tf.train.Saver()
 init = tf.global_variables_initializer()
+## 학습시킨 모델이름
 modelName = "Bi_LSTM.model"
 
 sess = tf.Session()
 sess.run(init)
 saver.restore(sess, modelName)
-
+s=''
+##exit 입력시 종료 ##
 while(True):
     try:
         s = input("문장을 입력하세요 : ")

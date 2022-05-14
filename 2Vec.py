@@ -1,11 +1,11 @@
-from konlpy.tag import Okt
-from gensim.models import Word2Vec
-import mariadb
-import sys
-import os
+from konlpy.tag import Okt ##konlpy에서 OKt형태소 분석기 사용
+from gensim.models import Word2Vec ## Train을 위한 모듈(gensim+word2vec모델만들어서 사용)
+import mariadb ##db연동을 위한 모듈
+import sys ##파이썬 대화형 프롬프트사용을 위한 모듈
+import os  ##작업 디렉토리 지정을 위한 모듈
 os.chdir('E:\\senier_project\\run\\Data\\')
-twitter = Okt()
-
+twitter = Okt() ## Okt객체 생성 메서드
+## 데이터베이스정보
 def dbconnect():
         conn = mariadb.connect(
             user="root",
@@ -21,12 +21,12 @@ def value(conn,category):
     # connection 객체로부터 cursor()메서드를 호출
     sql=sql = "SELECT * FROM " + category
     cur.execute(sql) # 데이터 행의 개수
-    result= cur.fetchall()
+    result= cur.fetchall() ##모든 데이터 한꺼번에 호출
     db_result = []
     for i in result:
-        db_result.append([i[0], category])
+        db_result.append([i[0], category])##리스트 마지막에 값추가
     return db_result
-
+## 영역분류
 cat = ['body', 'comm', 'social', 'art', 'science']
 line=[]
 
