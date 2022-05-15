@@ -17,7 +17,7 @@ def Convert2Vec(model_name, sentence):
         else:
             sub.append(np.random.uniform(-0.25, 0.25, 300))  # used for OOV words
     word_vec.append(sub)
-    return word_vec
+    return word_vec 
 
 def Grade(sentence):
     tokens = W2V.tokenize(sentence)
@@ -55,8 +55,9 @@ with tf.variable_scope("loss", reuse = tf.AUTO_REUSE):
     loss, optimizer = BiLSTM.model_build(logits, Y, learning_rate)
 
 prediction = tf.nn.softmax(logits)  # softmax(활성화 함수)
-
+#저장소
 saver = tf.train.Saver()
+#생성자
 init = tf.global_variables_initializer()
 ## 학습시킨 모델이름
 modelName = "Bi_LSTM.model"

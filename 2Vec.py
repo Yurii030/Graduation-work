@@ -31,6 +31,7 @@ cat = ['body', 'comm', 'social', 'art', 'science']
 line=[]
 
 conn = dbconnect()
+##예외처리
 try:
     for i in cat:
         line += value(conn,i)
@@ -40,7 +41,7 @@ except mariadb.Error as e:
     
 token = []
 embeddingmodel = []
-
+## 형태소 분석 및 Word2Vec(shuffle된 통합데이터 형태소 분석&Word2Vec진행)
 for i in line:
     content = i[1]  # csv에서 뉴스 제목 또는 뉴스 본문 column으로 변경
     sentence = twitter.pos(i[0], norm=True, stem=True)
@@ -58,7 +59,7 @@ for i in line:
     token.append(all_temp)
 print("토큰 처리 완료")
 
-
+#임베딩모델
 embeddingmodel = []
 for i in range(len(token)):
     temp_embeddingmodel = []
@@ -66,5 +67,7 @@ for i in range(len(token)):
         temp_embeddingmodel.append(token[i][0][k])
     embeddingmodel.append(temp_embeddingmodel)
 embedding = Word2Vec(embeddingmodel, size=300, window=5, min_count=10, sg=1)
+ #min_count = 단어 최소 빈도 수 제한
+ ##sg =1 ->skip-Gram방법 사용(중간에 잇는 단어로 주변 단어들을 예측하는 방법)
 embedding.save('post.embedding')
 print('exit')

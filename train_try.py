@@ -3,15 +3,15 @@
 @editor: lumyjuwon
 """
 
-import time
-import tensorflow as tf
-import numpy as np
-import Bi_LSTM 
-import Word2Vec
-import mariadb
-from konlpy.tag import Okt
-import sys
-import os
+import time  ##시간설정을 위한 시간 모듈
+import tensorflow as tf ## 머신러닝을 위한 모듈
+import numpy as np  ##벡터(리스트)모듈
+import Bi_LSTM ##학습모델
+import Word2Vec  ##벡터화모델
+import mariadb ## db연동 maria.db모듈
+from konlpy.tag import Okt  ##konlpy에서 OKt형태소 분석기 사용
+import sys ##파이썬 대화형 프롬프트사용을 위한 모듈
+import os ##작업 디렉토리 지정을 위한 모듈
 os.chdir('C:\\Users\\taddy\\run\\Data\\')
 twitter = Okt()
 W2V = Word2Vec.Word2Vec()
