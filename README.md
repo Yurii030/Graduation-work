@@ -18,11 +18,32 @@
 - [ ] 로깅 및 실험 기록 자동화
 - [ ] BERT 기반 모델 적용
 - [ ] FastAPI 추론 서버 배포
+- [ ] **LLM 기반 Zero-shot/Few-shot 분류 실험**
 
 ---
+
+## 로드맵
+1. 데이터 파이프라인 정리
+2. Baseline 모델 → BERT 모델 확장
+3. 실험 관리 자동화 (로그/리포트)
+4. 추론 서버화(FastAPI)
+5. **LLM 기반 실험**
+   - Zero-shot/Few-shot 프롬프트 분류
+   - 한국어 LLM (예: KoAlpaca, LLaMA2-ko) 시범 적용
+   - 성능 비교 및 한계 분석
+   
+-------
 
 ## 실행 방법 (임시)
 ```bash
 python src/train.py --config configs/baseline.yaml
 ※ 현재는 baseline 모델만 지원됩니다.
 ※ 리팩토링이 끝나면 BERT 기반 학습 및 추론 코드도 추가될 예정입니다.
+---
+## 향후 계획
+리팩토링 이후에는 최신 대규모 언어모델(LLM)을 활용한 분류 실험을 진행할 예정입니다.  
+- Zero-shot/Few-shot 프롬프트 엔지니어링  
+- 한국어 특화 LLM 적용  
+- Fine-tuning / LoRA 기반 경량 학습 시도  
+- 기존 모델(BERT) 대비 성능/비용 비교
+
