@@ -1,0 +1,31 @@
+# Byte-compiled / cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual environment
+.venv/
+venv/
+env/
+
+# Reports, artifacts
+ml/models/**
+!ml/models/.gitkeep
+ml/reports/**
+
+# Web uploads
+web/public/uploads/**
+!web/public/uploads/.gitkeep
+
+# Logs
+logs/
+*.log
+
+# Jupyter Notebook
+.ipynb_checkpoints/
+
+# IDE/OS
+.vscode/
+.DS_Store
+Thumbs.db

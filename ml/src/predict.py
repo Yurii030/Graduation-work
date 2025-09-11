@@ -1,72 +1,73 @@
 ##추론 전용 파일
-#ml/src/predict.py
+# 얇은 CLI 래퍼
+# 입력 소스 선택: mutually_exclusive_group()로 --text,--input을 동시에 못쓰게 함
+# 없으면 STDIN
+# 검증 체인 : require_str->require_not_empty->limit_length(실패시 ValidationError)
+# 코어 호출 : predict_core의 load_model, predict_text만 호출 ->IO와 비즈니스 로직 완전 분리.
+# 응답 포맷 : 항상 responses.success/error 사용 -> JSON 모양 고정.
+# 출력 옵션 : --pretty로 들여쓰기 옵션
+# 오류 처리: 파일없음-> FILE_NOT_FOUND, 검증실패->VALIDATION_ERROR, 내부오류->INTERNAL_ERROR
+# 내부오류는 raise 유지해 개발단계에선 트레이스 확인
+
+# ml/src/predict.py
 import sys       # STDIN/STDOUT 접근
 import json      # 결과를 JSON으로 출력
 import argparse  # 커맨드라인 인자 파싱을 위해 사용
-from typing import Dict # 타입힌트(가독성)
+from typing import Optional 
 
-# (1) 더미 모델 로딩 자리 : 나중에 실제 모델 로딩 코드로 교체)
-def load_model():
-    """
-    Todo : 실제모델/벡터라이저/토크나이저 로드.
-    에: joblib.load('models/tfidf_svm.joblib')또는 HF 토크나이저/모델
-    """
-    return{"_dummy":True}
+from ml.common.validators import require_str, require_not_empty, limit_length
+from ml.common.responses import success, error
+from ml.common.errors import ValidationError
+from .predict_core import load_model, predict_text
 
-# (2) 더미 예측 로직 : 나중에 실제 추론으로 교체
-def real_predict(model, text: str) -> Dict:
-    """
-    Todo : 실제 모델을 사용한 예측으로 대체
-    지금은 키워드 기반의 간단한 규칙으로 label/confidence 생성
-    """
-    t= text.lower()
-    # 아주 간단한 규칙
-    if any(k in t for k in["그림","색칠","미술","paint","draw"]):
-        label = "미술"
-        conf = 0.85
-    elif any(k in t for k in["뛰","달리","체육","운동","몸"]):
-        label = "신체"
-        conf = 0.8
-    elif any(k in t for k in["책","말","읽기","동화","story"]):
-        label = "언어"
-        conf = 0.82
-    elif any(k in t for k in["탐구","실험","관찰","자석","bug"]):
-        label = "과학"
-        conf = 0.78
-    else:
-        label = "기타"
-        conf = 0.5
+def _read_all_stdin() -> str:
+    if sys.stdin is None or sys.stdin.closed:
+        return ""
+    data = sys.stdin.read()
+    return data if data is not None else ""
 
-    return{"label":label,"confidence":conf}
+def main() -> None:
+    parser = argparse.ArgumentParser(description="Diary classifier CLI")
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument("--text", type=str, help="Input text to classify")
+    group.add_argument("--input", type=str, help="Path to a UTF-8 text file")
+    parser.add_argument("--pretty", action="store_true", help="Pretty-print JSON")
+    args = parser.parse_args()
 
-
-# (3) 엔트리 포인트 : 인자 처리 -> 예측 -> JSON 출력
-def main() :
-    # ArgumentParser 생성,--text 옵션정의
-    parser = argparse.ArgumentParser(description="Diary classifier(dummy)")
-    # 'text'를 선택인자로: 없으면 STDIN 또는 예시 문장 사용
-    parser.add_argument("text",nargs="?",type=str,help="Input text to classify")
-    args = parser.parse_args() ##인자파싱
-
-    # 입력은 두 경로 중 하나로 받음 : --text 또는 STDIN
+    # 입력 우선순위: --text > --input > STDIN
+    incoming: Optional[str] = None
     if args.text and args.text.strip():
-        incoming = args.text.strip()
-    else : ##없을땐 sys.stdin.read()로 표준입력에서 읽음
-        # 파이프나 shell_exec에서 STDIN으로 들어온 텍스트 자리
-        incoming = sys.stdin.read().strip() 
+        incoming = args.text
+    elif args.input:
+        try:
+            with open(args.input, "r", encoding="utf-8") as f:
+                incoming = f.read()
+        except FileNotFoundError:
+            print(json.dumps(error(f"File not found: {args.input}", code="FILE_NOT_FOUND"),
+                             ensure_ascii=False))
+            sys.exit(2)
+    else:
+        incoming = _read_all_stdin()
 
-    if not incoming :
-        # 비어 있으면 예시 텍스트 사용(디버깅 편의)
-        incoming = "예시 문장"
+    try:
+        text = limit_length(require_not_empty(require_str(incoming), name="text"),
+                            max_len=5000, name="text")
 
-    model = load_model()  # (1) 모델로드(현재는 더미)
-    result = real_predict(model, incoming) #(2) 예측 실행
+        model = load_model()
+        pred = predict_text(model, text)  # {"label":..., "confidence":...}
 
-    # JSON으로 표준출력에 결과 출력
-    # ensure_aascii=False 한글이 \ud55c같은 이스케이프가 아니라 그대로 출력되게 함
-    print(json.dumps(result,ensure_ascii=False))
-    
-## 이 파일을 스크립트로 실행했을 때만 main()을 호출
-## 모듈로 임포트될 때는 실행되지 않음->테스트/재사용에 유리
+        payload = success(pred["label"], pred["confidence"],
+                          meta={"engine": "rules", "model_version": model.get("_version", "0.1.0")})
+        print(json.dumps(payload, ensure_ascii=False, indent=2 if args.pretty else None))
+
+    except ValidationError as ve:
+        print(json.dumps(error(str(ve), code="VALIDATION_ERROR"), ensure_ascii=False))
+        sys.exit(2)
+    except Exception:
+        # 개발 단계: 내부 에러 코드로 감추되, 트레이스는 콘솔에 남기고 싶다면 raise 유지
+        print(json.dumps(error("Unexpected error occurred", code="INTERNAL_ERROR"),
+                         ensure_ascii=False))
+        raise
+
 if __name__ == "__main__":
     main()

@@ -1,0 +1,16 @@
+{
+  "ExpandedNodes": [
+    "",
+    "\\capstone",
+    "\\capstone\\web",
+    "\\capstone\\web\\public",
+    "\\capstone\\web\\public\\includes",
+    "\\capstone\\web\\public\\includes\\activity",
+    "\\ml",
+    "\\ml\\configs",
+    "\\ml\\src",
+    "\\ml\\src\\models"
+  ],
+  "SelectedNode": "\\ml\\reports",
+  "PreviewInSolutionExplorer": false
+}
