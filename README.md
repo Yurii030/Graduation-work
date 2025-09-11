@@ -84,8 +84,8 @@ python -m ml.src.predict --text "색칠 활동" --pretty
   "meta": { "engine": "rules", "model_version": "0.1.0" }
 }
 
-----
-# 학습 (Baseline)
+
+## 학습 (Baseline)
 python ml/src/train.py --config ml/configs/baseline.yaml
 ※ 현재는 baseline 모델만 지원됩니다.
 ※ 리팩토링이 끝나면 BERT 기반 학습 및 추론 코드도 추가될 예정입니다.
